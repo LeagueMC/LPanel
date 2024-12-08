@@ -134,6 +134,68 @@
     margin-top: 10px;
 }
 
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: 'Arial', sans-serif;
+    border: 2px solid #444;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 285px;
+    transition: all 0.3s ease;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Individual button colors */
+.action-btn.start {
+    background-color: #0a440d;
+}
+
+.action-btn.start:hover {
+    background-color: #0e5d11;
+}
+
+.action-btn.restart {
+    background-color: #201c1c;
+}
+
+.action-btn.restart:hover {
+    background-color: #2a2929;
+}
+
+.action-btn.stop {
+    background-color: #640909;
+}
+
+.action-btn.stop:hover {
+    background-color: #7e0c0c;
+}
+
+.action-btn.kill {
+    background-color: #861111;
+}
+
+.action-btn.kill:hover {
+    background-color: #a41515;
+}
+
+
         .server-card {
             background-color: #1f2128; padding: 25px; border-radius: 15px; color: #fff;
             display: flex; flex-direction: column; gap: 15px;
@@ -230,28 +292,13 @@
                             <p>Console Ready...</p>
                         </div>
                         <input class="command-input" type="text" id="console-input" placeholder="Type a command..." onkeypress="handleCommandInput(event)">
-                        <div style="display: flex; gap: 10px;">
-                            <button 
-                                style="background-color: #0a440d; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
-                                onclick="console.log('Start button clicked')">
-                                Start
-                            </button>
-                            <button 
-                                style="background-color: #201c1c; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
-                                onclick="console.log('Restart button clicked')">
-                                Restart
-                            </button>
-                            <button 
-                                style="background-color: #640909; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
-                                onclick="console.log('Stop button clicked')">
-                                Stop
-                            </button>
-                            <button 
-                                style="background-color: #861111; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
-                                onclick="console.log('Kill button clicked')">
-                                Kill
-                            </button>
+                        <div class="action-buttons">
+                            <button class="action-btn start" onclick="console.log('Start button clicked')">Start</button>
+                            <button class="action-btn restart" onclick="console.log('Restart button clicked')">Restart</button>
+                            <button class="action-btn stop" onclick="console.log('Stop button clicked')">Stop</button>
+                            <button class="action-btn kill" onclick="console.log('Kill button clicked')">Kill</button>
                         </div>
+                        
                     </div>
             
                     <!-- Stats Section -->
