@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,6 +33,107 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
         }
+        .console-section {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    background-color: #1c1e26;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.terminal-layout {
+    display: flex;
+    gap: 20px;
+    height: 100%; /* Use full height of the container */
+}
+
+.console-section {
+    flex: 2; /* Take up more space for the terminal */
+    display: flex;
+    flex-direction: column;
+    background-color: #1c1e26;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+}
+
+.header {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e0e0e0;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.console {
+    flex: 1;
+    background-color: #12151c;
+    border: 1px solid #2c303a;
+    border-radius: 10px;
+    padding: 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    color: #a6a6a6;
+    overflow-y: auto;
+}
+
+.console p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.command-input {
+    margin-top: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #1b1e27;
+    border: 1px solid #333;
+    border-radius: 5px;
+    color: #fff;
+}
+
+.command-input::placeholder {
+    color: #777;
+}
+
+.stats-section {
+    flex: 1; /* Take up less space compared to the terminal */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stat {
+    flex: none; /* Prevents the boxes from resizing */
+    height:390px; /* Fixed height for the stats boxes */
+    background-color: #1c1e26;
+    border: 1px solid #2c303a;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.stat h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 10px;
+}
+
+.stat canvas {
+    width: 100%;
+    height: 120px; /* Keep the canvas size fixed within the box */
+    margin-top: 10px;
+}
+
         .server-card {
             background-color: #1f2128; padding: 25px; border-radius: 15px; color: #fff;
             display: flex; flex-direction: column; gap: 15px;
@@ -119,8 +221,52 @@
             <button class="close-btn" onclick="closeModal()">&times;</button>
             <h2 id="modalTitle" style="text-align: center; margin: 20px 0;"></h2>
             <div class="tab-content" id="terminal">
-                <p>This is the Terminal tab content. You can add terminal related features here.</p>
-            </div>
+                <div class="terminal-layout">
+                    <!-- Terminal Section -->
+                    <div class="console-section">
+                        <div class="header">Terminal || Server Console</div>
+
+                        <div class="console" id="console-log">
+                            <p>Console Ready...</p>
+                        </div>
+                        <input class="command-input" type="text" id="console-input" placeholder="Type a command..." onkeypress="handleCommandInput(event)">
+                        <div style="display: flex; gap: 10px;">
+                            <button 
+                                style="background-color: #0a440d; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
+                                onclick="console.log('Start button clicked')">
+                                Start
+                            </button>
+                            <button 
+                                style="background-color: #201c1c; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
+                                onclick="console.log('Restart button clicked')">
+                                Restart
+                            </button>
+                            <button 
+                                style="background-color: #640909; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
+                                onclick="console.log('Stop button clicked')">
+                                Stop
+                            </button>
+                            <button 
+                                style="background-color: #861111; color: white; border: 2px solid #444; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 285px;" 
+                                onclick="console.log('Kill button clicked')">
+                                Kill
+                            </button>
+                        </div>
+                    </div>
+            
+                    <!-- Stats Section -->
+                    <div class="stats-section">
+                        <div class="stat">
+                            <h3>CPU Usage (%)</h3>
+                            <canvas id="cpuChart"></canvas>
+                        </div>
+                        <div class="stat">
+                            <h3>RAM Usage (GB)</h3>
+                            <canvas id="ramChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>                        
             <div class="tab-content" id="file-manager">
                 <p>This is the File Manager tab content. You can add file management features here.</p>
             </div>
@@ -147,6 +293,100 @@
         </div>
     </div>
     <script>
+        const randomAroundMid = (mid, spread, max) => Math.min(Math.max(0, mid + (Math.random() * 2 - 1) * spread), max);
+    const randomCPU = () => randomAroundMid(50, 20, 100);
+    const randomRAM = () => randomAroundMid(4, 1.5, 8);
+
+    const updateChartData = (chart, newValue) => {
+        chart.data.datasets[0].data.shift();
+        chart.data.datasets[0].data.push(newValue);
+        chart.update();
+    };
+
+    const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+    const cpuChart = new Chart(cpuCtx, {
+        type: 'line',
+        data: {
+            labels: Array.from({ length: 20 }, (_, i) => i + 1),
+            datasets: [{
+                label: 'CPU Usage (%)',
+                data: Array.from({ length: 20 }, randomCPU),
+                borderColor: '#4e7df2',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: false,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: {
+                    ticks: { 
+                        color: '#aaa', 
+                        stepSize: 10,
+                        callback: value => `${value}%` 
+                    },
+                    beginAtZero: true,
+                    max: 100,
+                },
+            },
+        },
+    });
+
+    const ramCtx = document.getElementById('ramChart').getContext('2d');
+    const ramChart = new Chart(ramCtx, {
+        type: 'line',
+        data: {
+            labels: Array.from({ length: 20 }, (_, i) => i + 1),
+            datasets: [{
+                label: 'RAM Usage (GB)',
+                data: Array.from({ length: 20 }, randomRAM),
+                borderColor: '#f2545b',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: false,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: {
+                    ticks: { 
+                        color: '#aaa', 
+                        stepSize: 1,
+                        callback: value => `${value} GB` 
+                    },
+                    beginAtZero: true,
+                    max: 8,
+                },
+            },
+        },
+    });
+
+    setInterval(() => {
+        updateChartData(cpuChart, randomCPU());
+        updateChartData(ramChart, randomRAM());
+    }, 500);
+
+    function handleCommandInput(event) {
+        if (event.key === 'Enter') {
+            const input = document.getElementById('console-input');
+            const log = document.getElementById('console-log');
+            if (input.value) {
+                const commandLine = document.createElement('p');
+                commandLine.textContent = `> ${input.value}`;
+                log.appendChild(commandLine);
+                log.scrollTop = log.scrollHeight;
+                input.value = '';
+            }
+        }
+    }
         const sidebarButtons = document.querySelectorAll('.sidebar-btn');
         sidebarButtons.forEach(button => {
             button.addEventListener('click', () => {

@@ -189,7 +189,6 @@ def execute_command():
         elif command.startswith('list'):
             return list_users(user_data)
 
-        # Help command for both modes
         elif command == 'help':
             return jsonify({
                 "output": (
@@ -209,4 +208,4 @@ def execute_command():
     return jsonify({"output": "<span style='color: #ff3333;'>Unknown command.</span>"})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='192.168.0.101', port=8000)
