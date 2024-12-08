@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LPanel Admin Command-Line</title>
     <style>
-        /* Global Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -27,7 +26,6 @@
             animation: fadeIn 0.7s ease-in-out;
         }
 
-        /* Animation for Main Container */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -37,7 +35,6 @@
             }
         }
 
-        /* Console Styling */
         #console {
             flex-grow: 1;
             padding: 15px;
@@ -48,7 +45,6 @@
             animation: slideIn 0.5s ease-in-out;
         }
 
-        /* Slide In Animation for Console */
         @keyframes slideIn {
             from {
                 transform: translateY(30px);
@@ -60,14 +56,12 @@
             }
         }
 
-        /* Input Line Styling */
         #input-line {
             display: flex;
             margin-top: 15px;
             gap: 10px;
         }
 
-        /* Command Input Styling */
         #command {
             flex-grow: 1;
             padding: 12px;
@@ -79,13 +73,11 @@
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Focus Effect for Input */
         #command:focus {
             border-color: #00cc88;
             box-shadow: 0 0 10px rgba(0, 204, 136, 0.4);
         }
 
-        /* Submit Button Styling */
         #submit {
             padding: 12px 20px;
             background-color: #00cc88;
@@ -98,7 +90,6 @@
             box-shadow: 0 4px 12px rgba(0, 204, 136, 0.3);
         }
 
-        /* Hover and Active Effects for Submit Button */
         #submit:hover {
             background-color: #009966;
             box-shadow: 0 6px 15px rgba(0, 153, 102, 0.5);
@@ -108,7 +99,6 @@
             transform: scale(0.95);
         }
 
-        /* Command Output Styling */
         .command-output {
             margin: 8px 0;
             animation: popIn 0.3s ease;
@@ -117,7 +107,6 @@
             border-radius: 4px;
         }
 
-        /* Pop-in Animation for Command Output */
         @keyframes popIn {
             from {
                 transform: scale(0.9);
@@ -158,14 +147,12 @@
             const command = commandInput.value.trim();
 
             if (command) {
-                // Determine if command is allowed in server mode
                 if (isServerMode && !['create', 'delete', 'reload', 'exit'].some(cmd => command.startsWith(cmd))) {
                     displayOutput(command, "<span style='color: #ff3333;'>Command not allowed in server mode.</span>");
                     commandInput.value = '';
                     return;
                 }
 
-                // Check if entering or exiting server mode
                 if (command === 'server') {
                     isServerMode = true;
                     displayOutput(command, "<span style='color: #00cc88;'>Entered server mode. Available commands: create, delete, reload, exit</span>");
@@ -174,9 +161,8 @@
                     displayOutput(command, "<span style='color: #ffcc00;'>Exited server mode.</span>");
                 } else if (command === 'reload') {
                     displayOutput(command, "<span style='color: #00cc88;'>Page reloaded.</span>");
-                    location.reload();  // Reload the page
+                    location.reload();
                 } else {
-                    // Send command to server for processing
                     fetch('/execute-command', {
                         method: 'POST',
                         headers: {
@@ -190,7 +176,7 @@
                     });
                 }
 
-                commandInput.value = ''; // Clear input field
+                commandInput.value = '';
             }
         }
 
@@ -200,10 +186,9 @@
             outputDiv.className = 'command-output';
             outputDiv.innerHTML = `<span style='color: #00cc88; font-weight: bold;'>> ${command}</span><br><span>${output}</span>`;
             consoleDiv.appendChild(outputDiv);
-            consoleDiv.scrollTop = consoleDiv.scrollHeight; // Auto-scroll to the bottom
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
         }
 
-        // Show welcome message on load
         document.addEventListener('DOMContentLoaded', () => {
             displayOutput('', "<span style='color: #00cc88; font-weight: bold;'>Welcome to LPanel Admin Command Line!</span><br><span style='color: #ffffff;'>Use 'help' to view all commands.</span>");
         });

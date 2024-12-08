@@ -6,7 +6,6 @@ import schedule
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# Define paths
 servers_dir = '/home/administrator/LPanel/servers'
 backups_dir = '/home/administrator/LPanel/backups'
 
@@ -52,11 +51,9 @@ def backup_all_folders():
                 print(f"Backup created for {folder} at {backup_path}")
 
 if __name__ == "__main__":
-    # Perform an initial backup of all folders
     backup_all_folders()
     
     watcher = Watcher(servers_dir)
-    # Schedule to backup every 5 hours
     schedule.every(5).hours.do(backup_all_folders)
 
     print("Starting to watch the servers directory...")
