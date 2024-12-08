@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LPanel Admin Command-Line</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            animation: fadeIn 0.7s ease-in-out;
+        }
+
+        /* Animation for Main Container */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Console Styling */
+        #console {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #1f1f1f;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        /* Slide In Animation for Console */
+        @keyframes slideIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Input Line Styling */
+        #input-line {
+            display: flex;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        /* Command Input Styling */
+        #command {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #222;
+            color: #ffffff;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Focus Effect for Input */
+        #command:focus {
+            border-color: #00cc88;
+            box-shadow: 0 0 10px rgba(0, 204, 136, 0.4);
+        }
+
+        /* Submit Button Styling */
+        #submit {
+            padding: 12px 20px;
+            background-color: #00cc88;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 204, 136, 0.3);
+        }
+
+        /* Hover and Active Effects for Submit Button */
+        #submit:hover {
+            background-color: #009966;
+            box-shadow: 0 6px 15px rgba(0, 153, 102, 0.5);
+        }
+
+        #submit:active {
+            transform: scale(0.95);
+        }
+
+        /* Command Output Styling */
+        .command-output {
+            margin: 8px 0;
+            animation: popIn 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        /* Pop-in Animation for Command Output */
+        @keyframes popIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <div id="console"></div>
+        <div id="input-line">
+            <input type="text" id="command" placeholder="Enter command..." autocomplete="off" />
+            <button id="submit">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        let isServerMode = false;
+
+        document.getElementById('command').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                executeCommand();
+            }
+        });
+
+        document.getElementById('submit').onclick = function () {
+            executeCommand();
+        };
+
+        function executeCommand() {
+            const commandInput = document.getElementById('command');
+            const command = commandInput.value.trim();
+
+            if (command) {
+                // Determine if command is allowed in server mode
+                if (isServerMode && !['create', 'delete', 'reload', 'exit'].some(cmd => command.startsWith(cmd))) {
+                    displayOutput(command, "<span style='color: #ff3333;'>Command not allowed in server mode.</span>");
+                    commandInput.value = '';
+                    return;
+                }
+
+                // Check if entering or exiting server mode
+                if (command === 'server') {
+                    isServerMode = true;
+                    displayOutput(command, "<span style='color: #00cc88;'>Entered server mode. Available commands: create, delete, reload, exit</span>");
+                } else if (isServerMode && command === 'exit') {
+                    isServerMode = false;
+                    displayOutput(command, "<span style='color: #ffcc00;'>Exited server mode.</span>");
+                } else if (command === 'reload') {
+                    displayOutput(command, "<span style='color: #00cc88;'>Page reloaded.</span>");
+                    location.reload();  // Reload the page
+                } else {
+                    // Send command to server for processing
+                    fetch('/execute-command', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ command: command, isServerMode: isServerMode })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        displayOutput(command, data.output);
+                    });
+                }
+
+                commandInput.value = ''; // Clear input field
+            }
+        }
+
+        function displayOutput(command, output) {
+            const consoleDiv = document.getElementById('console');
+            const outputDiv = document.createElement('div');
+            outputDiv.className = 'command-output';
+            outputDiv.innerHTML = `<span style='color: #00cc88; font-weight: bold;'>> ${command}</span><br><span>${output}</span>`;
+            consoleDiv.appendChild(outputDiv);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight; // Auto-scroll to the bottom
+        }
+
+        // Show welcome message on load
+        document.addEventListener('DOMContentLoaded', () => {
+            displayOutput('', "<span style='color: #00cc88; font-weight: bold;'>Welcome to LPanel Admin Command Line!</span><br><span style='color: #ffffff;'>Use 'help' to view all commands.</span>");
+        });
+    </script>
+</body>
+
+</html>

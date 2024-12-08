@@ -1,0 +1,1 @@
+make the page dark them with a sidebar and the sidebar having a list of all servers in the folder

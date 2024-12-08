@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        /* General Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #0d0e11; color: #fff; display: flex; height: 100vh; overflow: hidden; }
+        .container { display: flex; width: 100%; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 220px; background-color: #16181d; padding-top: 20px; display: flex; flex-direction: column; gap: 15px;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.3); border-top-right-radius: 15px; border-bottom-right-radius: 15px;
+        }
+        .sidebar-btn {
+            background-color: #1f2128; border: none; color: #b9bbbe; padding: 12px 20px; text-align: left; font-size: 16px;
+            cursor: pointer; transition: background 0.3s, color 0.3s; border-radius: 8px; margin: 0 10px;
+        }
+        .sidebar-btn:hover, .sidebar-btn.active { background-color: #3a3d45; color: #fff; }
+        .spacer { flex-grow: 1; }
+        .space-below { height: 5px; }
+        
+        /* Main Content Styling */
+        .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Header Buttons */
+        header { display: flex; gap: 10px; justify-content: flex-end; }
+        .header-btn {
+            background-color: #1f2128; border: none; color: #b9bbbe; padding: 10px 15px; border-radius: 10px; font-size: 14px;
+            cursor: pointer; transition: background 0.3s, transform 0.2s; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+        .header-btn:hover { background-color: #3a3d45; transform: scale(1.05); }
+        .discord-btn { background-color: #5865f2; color: #fff; }
+
+        /* Server Cards Layout */
+        .server-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        /* Server Card Styling */
+        .server-card {
+            background-color: #1f2128; padding: 25px; border-radius: 15px; color: #fff;
+            display: flex; flex-direction: column; gap: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            cursor: pointer; /* Change cursor to pointer for server cards */
+        }
+        
+        /* Additional Box and Text Styling */
+        .server-card-header h3 { font-size: 22px; margin-bottom: 5px; color: #e0e0e0; }
+        .server-card-header p { color: #b9bbbe; font-size: 14px; }
+        .ram-box {
+            background-color: #292b2f; padding: 10px; border-radius: 5px; margin-top: 10px; color: #fff; text-align: center;
+        }
+        footer { text-align: center; font-size: 12px; color: #6d6f72; margin-top: 15px; }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+        }
+        .modal-content {
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(30, 30, 30, 0.95); /* Slightly transparent for the modal itself */
+            display: flex;
+            flex-direction: column;
+        }
+        .close-btn {
+            color: #ff5c5c; 
+            background: none; 
+            border: none; 
+            font-size: 24px; 
+            position: absolute; 
+            top: 10px; 
+            right: 20px; 
+            cursor: pointer;
+        }
+
+        /* Footer Tabs */
+        .modal-footer {
+            display: flex; 
+            justify-content: space-around; 
+            padding: 10px; 
+            border-top: 1px solid #444; 
+            margin-top: auto; 
+            background-color: #1f2128; 
+        }
+        .tab {
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            color: #b9bbbe; 
+            padding: 10px 15px; 
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Shadow effect */
+        }
+        .tab:hover { background-color: #3a3d45; transform: scale(1.05); } /* Scale on hover */
+        .tab i { margin-right: 5px; } /* Space between icon and text */
+
+        /* Tab Content Styles */
+        .tab-content {
+            display: none; /* Hidden by default */
+            padding: 20px; 
+            color: #b9bbbe; 
+            flex-grow: 1; /* Take up remaining space */
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Shadow for tab content */
+            transition: opacity 0.3s ease; /* Fade effect */
+            opacity: 0; /* Initially hidden */
+        }
+        .tab-content.active {
+            display: block; /* Show active tab content */
+            opacity: 1; /* Fully visible */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .server-cards-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 500px) {
+            .server-cards-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <button class="sidebar-btn active">Home</button>
+            <button class="sidebar-btn">Account</button>
+            <div class="sidebar-btn">Servers</div>
+            <div style="padding-left: 20px;">
+                {% for name in server_names %}
+                <div style="color: #b9bbbe; font-size: 14px; padding: 5px 0;">
+                    {{ name }}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="spacer"></div>
+            <button class="sidebar-btn" onclick="window.location.href='/'">Logout</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header>
+                <button class="header-btn" onclick="window.location.href='https://discord.gg/leaguemc-1230836040588071004'">Support</button>
+                <button class="header-btn" onclick="window.location.href='https://discord.gg/leaguemc-1230836040588071004'">Billing</button>
+                <button class="header-btn" onclick="window.location.href='https://discord.gg/leaguemc-1230836040588071004'">Status</button>
+                <button class="header-btn discord-btn" onclick="window.location.href='https://discord.gg/leaguemc-1230836040588071004'">Discord</button>
+            </header>
+
+            <!-- Server Cards in Grid Layout -->
+            <div class="server-cards-grid">
+                {% for server in servers %}
+                <div class="server-card" onclick="openModal('{{ server.name }}', '{{ server.ram }}', '{{ server.creation_date }}')">
+                    <div class="server-card-header">
+                        <h3>{{ server.name }}</h3>
+                        <p>{{ server.creation_date }} || United Hosting</p>
+                    </div>
+                    <div class="ram-box">RAM: {{ server.ram }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="myModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h2 id="modalTitle" style="text-align: center; margin: 20px 0;"></h2>
+            <div class="tab-content" id="terminal">
+                <p>This is the Terminal tab content. You can add terminal related features here.</p>
+            </div>
+            <div class="tab-content" id="file-manager">
+                <p>This is the File Manager tab content. You can add file management features here.</p>
+            </div>
+            <div class="tab-content" id="backups">
+                <p>This is the Backups tab content. You can add backup related features here.</p>
+            </div>
+            <div class="tab-content" id="lock">
+                <p>This is the Lock tab content. You can add locking features here.</p>
+            </div>
+            <div class="modal-footer">
+                <div class="tab" onclick="showTab('terminal')">
+                    <i>🖥️</i> Terminal
+                </div>
+                <div class="tab" onclick="showTab('file-manager')">
+                    <i>📁</i> File Manager
+                </div>
+                <div class="tab" onclick="showTab('backups')">
+                    <i>💾</i> Backups
+                </div>
+                <div class="tab" onclick="showTab('lock')">
+                    <i>🔒</i> Lock
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle sidebar active state
+        const sidebarButtons = document.querySelectorAll('.sidebar-btn');
+        sidebarButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                sidebarButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            });
+        });
+
+        // Modal functionality
+        function openModal(serverName, ram, creationDate) {
+            document.getElementById('modalTitle').innerText = `${serverName} (RAM: ${ram})`;
+            document.getElementById('myModal').style.display = 'block';
+            showTab('terminal'); // Default to Terminal tab on open
+        }
+
+        function closeModal() {
+            document.getElementById('myModal').style.display = 'none';
+        }
+
+        function showTab(tab) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none'; // Hide all initially
+            });
+
+            // Show the selected tab content
+            const activeContent = document.getElementById(tab);
+            if (activeContent) {
+                activeContent.classList.add('active');
+                activeContent.style.display = 'block'; // Show active tab
+            }
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('myModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>
