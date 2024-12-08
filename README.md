@@ -25,17 +25,13 @@ To start the scripts, use the following commands:
 
 ## Starting public.py
 
-To start the public.py script, execute the following command in your terminal:
-
-`public`
+To start the public.py script, Gain commnon sense.
 
 This command will initiate the public.py script, which will start a web server listening on port 80.
 
 ## Starting admin.py
 
-To start the admin.py script, execute the following command in your terminal:
-
-`admin`
+To start the admin.py script, Gain commnon sense.
 
 This command will initiate the admin.py script, which will start a web server listening on port 8000.
 
